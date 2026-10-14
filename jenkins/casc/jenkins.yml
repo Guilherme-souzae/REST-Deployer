@@ -1,0 +1,15 @@
+jenkins:
+  systemMessage: "Jenkins gerenciado por CasC"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${ADMIN_USER}"
+          password: "${ADMIN_PASSWORD}"
+  authorizationStrategy:
+    globalMatrix:
+      entries:
+        - user:
+            name: "${ADMIN_USER}"
+            permissions: ["Overall/Administer"]

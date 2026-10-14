@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        timeout(time: 15, unit: 'MINUTES')
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Checkout info') {
+            steps {
+                sh 'git log -1 --oneline'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'echo "Compilando..." && sleep 2'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo "Rodando testes..."'
+            }
+        }
+    }
+
+    post {
+        always  { cleanWs() }
+        success { echo 'Pipeline OK' }
+        failure { echo 'Pipeline falhou' }
+    }
+}
