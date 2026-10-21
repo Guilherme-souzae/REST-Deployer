@@ -1,35 +1,57 @@
-pipeline {
+pipeline
+{
     agent any
 
-    options {
+    options
+    {
         timestamps()
         timeout(time: 15, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
-    stages {
-        stage('Checkout info') {
-            steps {
-                sh 'git log -1 --oneline'
-            }
+    stages
+    {
+        stage('Setup python')
+        {
+            sh '''
+                python3 -m venv .venv
+                .venv/bin/python -m pip install --upgrade pip
+                .venv/bin/python -m pip install -r requirements.txt
+            '''
         }
 
-        stage('Build') {
-            steps {
-                sh 'echo "Compilando..." && sleep 2'
+        stage('Unit tests')
+        {
+            steps
+            {
+                sh '''
+                .venv/bin/python -m pytest \
+                    tests/ \
+                    --junitxml=pytest-report.xml
+                '''
             }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'echo "Rodando testes..."'
+            post
+            {
+                always
+                {
+                     junit testResults: 'pytest-report.xml', allowEmptyResults: false
+                }
             }
         }
     }
-
-    post {
-        always  { cleanWs() }
-        success { echo 'Pipeline OK' }
-        failure { echo 'Pipeline falhou' }
+    post
+    {
+        success
+        {
+            echo 'Todos os testes unitários passaram!'
+        }
+        failure
+        {
+            echo 'Falha no pipeline. Verifica os testes e os logs.'
+        }
+        always
+        {
+            echo 'Pipeline finalizado.'
+        }
     }
 }
