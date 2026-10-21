@@ -47,7 +47,7 @@ pipeline {
 
         stage('Deploy AWS') {
             steps {
-                sshagent(credentials: ['ec2-deploy-key']) {
+                sshagent(credentials: ['hyperuser']) {
                     sh '''
                         set -eu
 
