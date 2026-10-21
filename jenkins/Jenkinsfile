@@ -1,56 +1,52 @@
-pipeline
-{
+
+pipeline {
     agent any
 
-    options
-    {
+    options {
         timestamps()
         timeout(time: 15, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
-    stages
-    {
-        stage('Setup python')
-        {
-            sh '''
-                python3 -m venv .venv
-                .venv/bin/python -m pip install --upgrade pip
-                .venv/bin/python -m pip install -r requirements.txt
-            '''
-        }
-
-        stage('Unit tests')
-        {
-            steps
-            {
+    stages {
+        stage('Setup python') {
+            steps {
                 sh '''
-                .venv/bin/python -m pytest \
-                    tests/ \
-                    --junitxml=pytest-report.xml
+                    python3 -m venv .venv
+                    .venv/bin/python -m pip install --upgrade pip
+                    .venv/bin/python -m pip install -r requirements.txt
                 '''
             }
-            post
-            {
-                always
-                {
-                     junit testResults: 'pytest-report.xml', allowEmptyResults: false
+        }
+
+        stage('Unit tests') {
+            steps {
+                sh '''
+                    .venv/bin/python -m pytest \
+                        tests/ \
+                        --junitxml=pytest-report.xml
+                '''
+            }
+
+            post {
+                always {
+                    junit testResults: 'pytest-report.xml',
+                          allowEmptyResults: false
                 }
             }
         }
     }
-    post
-    {
-        success
-        {
+
+    post {
+        success {
             echo 'Todos os testes unitários passaram!'
         }
-        failure
-        {
-            echo 'Falha no pipeline. Verifica os testes e os logs.'
+
+        failure {
+            echo 'Falha no pipeline. Verifique os testes e os logs.'
         }
-        always
-        {
+
+        always {
             echo 'Pipeline finalizado.'
         }
     }
