@@ -1,8 +1,7 @@
 pipeline {
     agent any
 
-    triggers
-    {
+    triggers {
         githubPush()
     }
 
@@ -12,28 +11,78 @@ pipeline {
         disableConcurrentBuilds()
     }
 
+    environment {
+        EC2_HOST = '34.203.35.196'
+    }
+
     stages {
-        stage('Setup python') {
+        stage('Setup Python') {
             steps {
                 sh '''
                     python3 -m venv .venv
                     .venv/bin/python -m pip install --upgrade pip
                     .venv/bin/python -m pip install -r python/requirements.txt
+                    .venv/bin/python -m pip install pytest
                 '''
             }
         }
 
-        stage('Unit tests') {
+        stage('Unit Tests') {
             steps {
                 sh '''
-                    .venv/bin/python -m pytest python/tests.py --junitxml=pytest-report.xml
+                    .venv/bin/python -m pytest \
+                        python/tests.py \
+                        --junitxml=pytest-report.xml
                 '''
             }
-
             post {
                 always {
-                    junit testResults: 'pytest-report.xml',
-                          allowEmptyResults: false
+                    junit(
+                        testResults: 'pytest-report.xml',
+                        allowEmptyResults: false
+                    )
+                }
+            }
+        }
+
+        stage('Deploy AWS') {
+            steps {
+                sshagent(credentials: ['ec2-deploy-key']) {
+                    sh '''
+                        set -eu
+
+                        ssh \
+                          -o StrictHostKeyChecking=accept-new \
+                          ec2-user@${EC2_HOST} 'bash -se' <<'REMOTE'
+set -eu
+
+REPO=/home/ec2-user/REST-Deployer
+
+if [ -d "$REPO/.git" ]; then
+    cd "$REPO"
+    git fetch origin main
+    git reset --hard origin/main
+else
+    git clone \
+        https://github.com/Guilherme-souzae/REST-Deployer.git \
+        "$REPO"
+    cd "$REPO"
+fi
+
+sudo docker build \
+    -t rest-deployer-api ./python
+
+sudo docker rm -f rest-deployer-api || true
+
+sudo docker run -d \
+    --name rest-deployer-api \
+    --restart unless-stopped \
+    -p 5000:5000 \
+    rest-deployer-api
+
+sudo docker ps --filter name=rest-deployer-api
+REMOTE
+                    '''
                 }
             }
         }
@@ -41,13 +90,11 @@ pipeline {
 
     post {
         success {
-            echo 'Todos os testes unitários passaram!'
+            echo 'Testes passaram e o deploy foi executado!'
         }
-
         failure {
             echo 'Falha no pipeline. Verifique os testes e os logs.'
         }
-
         always {
             echo 'Pipeline finalizado.'
         }
