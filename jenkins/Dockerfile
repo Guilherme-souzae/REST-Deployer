@@ -1,7 +1,12 @@
 FROM jenkins/jenkins:lts-jdk25
 
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+USER root
 
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv && rm -rf /var/lib/apt/lists/*
+
+USER jenkins
+
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 ENV CASC_JENKINS_CONFIG=/var/jenkins_casc
 
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
