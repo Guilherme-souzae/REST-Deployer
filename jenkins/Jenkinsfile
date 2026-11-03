@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        EC2_HOST = credentials: ['hostip']
+        EC2_HOST = credentials: ('hostip')
     }
 
     stages {
