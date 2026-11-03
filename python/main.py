@@ -6,7 +6,7 @@ api = Api(app)
 
 class ItemList(Resource):
     def get(self):
-        return {'items': ['item1', 'item2', 'item3']}
+        return {'items': ['item1', 'item2', 'item3', 'item4']}
 
 api.add_resource(ItemList, '/items')
 
