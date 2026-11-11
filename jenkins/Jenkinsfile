@@ -53,35 +53,58 @@ pipeline {
 
                         ssh \
                           -o StrictHostKeyChecking=accept-new \
-                          ec2-user@${EC2_HOST} 'bash -se' <<'REMOTE'
-set -eu
+                          ubuntu@${EC2_HOST} 'bash -se' <<'REMOTE'
+                        set -eu
 
-REPO=/home/ec2-user/REST-Deployer
+                        REPO=/home/ec2-user/REST-Deployer
 
-if [ -d "$REPO/.git" ]; then
-    cd "$REPO"
-    git fetch origin main
-    git reset --hard origin/main
-else
-    git clone \
-        https://github.com/Guilherme-souzae/REST-Deployer.git \
-        "$REPO"
-    cd "$REPO"
-fi
+                        if [ -d "$REPO/.git" ]; then
+                            cd "$REPO"
+                            git fetch origin main
+                            git reset --hard origin/main
+                        else
+                            git clone \
+                                https://github.com/Guilherme-souzae/REST-Deployer.git \
+                                "$REPO"
+                            cd "$REPO"
+                        fi
 
-sudo docker build \
-    -t rest-deployer-api ./python
+                        sudo docker build \
+                            -t rest-deployer-api ./python
 
-sudo docker rm -f rest-deployer-api || true
+                        sudo docker rm -f rest-deployer-api || true
 
-sudo docker run -d \
-    --name rest-deployer-api \
-    --restart unless-stopped \
-    -p 5000:5000 \
-    rest-deployer-api
+                        sudo docker run -d \
+                            --name rest-deployer-api \
+                            --restart unless-stopped \
+                            -p 5000:5000 \
+                            rest-deployer-api
 
-sudo docker ps --filter name=rest-deployer-api
-REMOTE
+                        sudo docker ps --filter name=rest-deployer-api
+                        REMOTE
+                    '''
+                }
+            }
+        }
+
+        stage('Wait') {
+            steps {
+                sleep time: 20, unit: 'SECONDS'
+            }
+        }
+
+        stage('Newman runtime tests') {
+            steps {
+                withCredentials([string(credentialsId: 'deploy-host-ip', variable: 'DEPLOY_HOST')]) {
+                    sh '''
+                        mkdir -p newman-reports
+                        docker run --rm \
+                          -v "$WORKSPACE/postman:/etc/newman/collections:ro" \
+                          -v "$WORKSPACE/newman-reports:/etc/newman/reports" \
+                          postman/newman:alpine run /etc/newman/collections/api.postman_collection.json \
+                          --env-var baseUrl=http://$DEPLOY_HOST:5000 \
+                          --reporters cli,junit \
+                          --reporter-junit-export /etc/newman/reports/newman.xml
                     '''
                 }
             }
