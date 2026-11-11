@@ -56,7 +56,7 @@ pipeline {
                           ubuntu@${EC2_HOST} 'bash -se' <<'REMOTE'
                         set -eu
 
-                        REPO=/home/ec2-user/REST-Deployer
+                        REPO=/home/ubuntu/REST-Deployer
 
                         if [ -d "$REPO/.git" ]; then
                             cd "$REPO"
