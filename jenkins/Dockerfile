@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 python3-venv docker.io \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=docker:cli /usr/local/bin/docker /usr/local/bin/docker
+
 USER jenkins
 
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
