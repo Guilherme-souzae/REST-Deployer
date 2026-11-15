@@ -221,3 +221,7 @@ __marimo__/
 
 # Jetbrains
 .idea/*
+
+# Terraform
+.terraform/*
+.terraform.lock.hcl

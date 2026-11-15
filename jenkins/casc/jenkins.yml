@@ -19,7 +19,7 @@ jenkins:
 
 jobs:
   - script: |
-      pipelineJob('testes-python') {
+      pipelineJob('main-pipeline') {
           definition {
               cpsScm {
                   scm {

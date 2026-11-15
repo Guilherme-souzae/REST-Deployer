@@ -6,6 +6,7 @@ services:
     image: meu-jenkins:dev
     container_name: jenkins-local
     restart: unless-stopped
+    user: root
     ports:
       - "8080:8080"
       - "50000:50000"
@@ -13,8 +14,9 @@ services:
       ADMIN_USER: "CHANGEME"
       ADMIN_PASSWORD: "CHANGEME"
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - /var/jenkins_home:/var/jenkins_home
       - ./casc:/var/jenkins_casc:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   jenkins_home:
