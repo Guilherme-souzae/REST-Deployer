@@ -81,17 +81,20 @@ pipeline {
 
         stage('Newman runtime tests') {
             steps {
-                withCredentials([string(credentialsId: 'deploy-host-ip', variable: 'DEPLOY_HOST')]) {
-                    sh '''
-                        mkdir -p newman-reports
-                        docker run --rm \
-                          -v "$WORKSPACE/postman:/etc/newman/collections:ro" \
-                          -v "$WORKSPACE/newman-reports:/etc/newman/reports" \
-                          postman/newman:alpine run /etc/newman/collections/api.postman_collection.json \
-                          --env-var baseUrl=http://$DEPLOY_HOST:5000 \
-                          --reporters cli,junit \
-                          --reporter-junit-export /etc/newman/reports/newman.xml
-                    '''
+                sh '''
+                    mkdir -p newman-reports
+                    docker run --rm \
+                      -v "$WORKSPACE/postman:/etc/newman/collections:ro" \
+                      -v "$WORKSPACE/newman-reports:/etc/newman/reports" \
+                      postman/newman:alpine run /etc/newman/collections/api.postman_collection.json \
+                      --env-var baseUrl=http://$EC2_HOST:5000 \
+                      --reporters cli,junit \
+                      --reporter-junit-export /etc/newman/reports/newman.xml
+                '''
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'newman-reports/newman.xml'
                 }
             }
         }
