@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        EC2_HOST = credentials('hostip')
+        EC2_HOST_IP = credentials('ec2-host-ip')
     }
 
     stages {
@@ -66,7 +66,7 @@ pipeline {
                     sudo docker ps --filter name=rest-deployer-api
                 '''
                 sshagent(credentials: ['deploy-key']) {
-                    sh 'ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new ubuntu@${EC2_HOST} "bash -s" < deploy.sh'
+                    sh 'ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new ubuntu@${EC2_HOST_IP} "bash -s" < deploy.sh'
                 }
             }
         }
@@ -85,7 +85,7 @@ pipeline {
                       -v "$WORKSPACE/postman:/etc/newman/collections:ro" \
                       -v "$WORKSPACE/newman-reports:/etc/newman/reports" \
                       postman/newman:alpine run /etc/newman/collections/api.postman_collection.json \
-                      --env-var baseUrl=http://$EC2_HOST:5000 \
+                      --env-var baseUrl=http://$EC2_HOST_IP:5000 \
                       --reporters cli,junit \
                       --reporter-junit-export /etc/newman/reports/newman.xml
                 '''
