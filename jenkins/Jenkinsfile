@@ -13,7 +13,6 @@ pipeline {
 
     environment {
         EC2_HOST = credentials('hostip')
-        KEY_NAME = credentials('keyname')
     }
 
     stages {
@@ -46,7 +45,6 @@ pipeline {
             }
         }
 
-
         stage('Deploy AWS') {
             steps {
                 writeFile file: 'deploy.sh', text: '''
@@ -67,7 +65,7 @@ pipeline {
                     sudo docker run -d --name rest-deployer-api --restart unless-stopped -p 5000:5000 rest-deployer-api
                     sudo docker ps --filter name=rest-deployer-api
                 '''
-                sshagent(KEY_NAME) {
+                sshagent(credentials: ['deploy-key']) {
                     sh 'ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new ubuntu@${EC2_HOST} "bash -s" < deploy.sh'
                 }
             }
@@ -94,7 +92,8 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'newman-reports/newman.xml'
+                    junit allowEmptyResults: true,
+                          testResults: 'newman-reports/newman.xml'
                 }
             }
         }
@@ -102,7 +101,7 @@ pipeline {
 
     post {
         success {
-            echo 'Test switch sucess, the code has been deployed!'
+            echo 'Tests passed, the code has been deployed!'
         }
         failure {
             echo 'Pipeline failure, check the logs'
