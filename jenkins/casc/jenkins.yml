@@ -1,3 +1,4 @@
+
 jenkins:
   systemMessage: "CICD Server Management System"
   numExecutors: 2
@@ -6,14 +7,14 @@ jenkins:
     local:
       allowsSignup: false
       users:
-        - id: "${ADMIN_USER}"
-          password: "${ADMIN_PASSWORD}"
+        - id: "CHANGEME"
+          password: "CHANGEME"
 
   authorizationStrategy:
     globalMatrix:
       entries:
         - user:
-            name: "${ADMIN_USER}"
+            name: "CHANGEME"
             permissions:
               - "Overall/Administer"
 

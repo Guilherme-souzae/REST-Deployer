@@ -13,6 +13,7 @@ pipeline {
 
     environment {
         EC2_HOST = credentials('hostip')
+        KEY_NAME = credentials('keyname')
     }
 
     stages {
@@ -66,7 +67,7 @@ pipeline {
                     sudo docker run -d --name rest-deployer-api --restart unless-stopped -p 5000:5000 rest-deployer-api
                     sudo docker ps --filter name=rest-deployer-api
                 '''
-                sshagent(credentials: ['hyperuser']) {
+                sshagent(KEY_NAME) {
                     sh 'ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new ubuntu@${EC2_HOST} "bash -s" < deploy.sh'
                 }
             }
@@ -101,13 +102,13 @@ pipeline {
 
     post {
         success {
-            echo 'Testes passaram e o deploy foi executado!'
+            echo 'Test switch sucess, the code has been deployed!'
         }
         failure {
-            echo 'Falha no pipeline. Verifique os testes e os logs.'
+            echo 'Pipeline failure, check the logs'
         }
         always {
-            echo 'Pipeline finalizado.'
+            echo 'Pipeline finished.'
         }
     }
 }

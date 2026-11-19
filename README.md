@@ -62,7 +62,7 @@ sudo mkdir -p /var/jenkins_home
 sudo chown -R 1000:1000 /var/jenkins_home
 
 git clone https://github.com/Guilherme-souzae/REST-Deployer.git
-cd REST-Deployer
+cd REST-Deployer/jenkins
 ```
 
 Jenkins needs access to the host's Docker socket to run Newman containers.
@@ -76,7 +76,7 @@ getent group docker | cut -d: -f3
 Finally, start Jenkins:
 
 ```bash
-docker compose up -d --build
+sudo docker compose up -d --build
 ```
 
 The Jenkins intance should be well prepared
