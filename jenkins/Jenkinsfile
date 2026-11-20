@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        EC2_HOST_IP = credentials('ec2-host-ip')
+        EC2_HOST_IP = credentials('deployment-ip')
     }
 
     stages {
@@ -65,6 +65,7 @@ pipeline {
                     sudo docker run -d --name rest-deployer-api --restart unless-stopped -p 5000:5000 rest-deployer-api
                     sudo docker ps --filter name=rest-deployer-api
                 '''
+
                 sshagent(credentials: ['deployment-key']) {
                     sh 'ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new ubuntu@${EC2_HOST_IP} "bash -s" < deploy.sh'
                 }
