@@ -1,5 +1,7 @@
 # REST-Deployer
 
+PUSH TEST
+
 Installation instructions
 
 > The commands below assume **Ubuntu Server 22.04 or 24.04** on both EC2 instances.
