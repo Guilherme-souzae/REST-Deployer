@@ -13,6 +13,3 @@ services:
       - /var/jenkins_home:/var/jenkins_home
       - ./casc:/var/jenkins_casc:ro
       - /var/run/docker.sock:/var/run/docker.sock
-
-volumes:
-  jenkins_home:
